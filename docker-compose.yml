@@ -1,0 +1,41 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d
+      - ./:/var/www/shop
+      - ./docker/logs:/var/log/nginx
+    links:
+      - php
+    container_name: docker_nginx
+  php:
+    build: ./docker/php
+    links:
+      - mysql
+    volumes:
+      - ./:/var/www/shop
+  mysql:
+    image: mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+      - ./docker/file_setting:/var
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    container_name: docker_mysql
+  pma:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    links:
+      - mysql:mysql
+    ports:
+      - 8001:80
+    environment:
+      PMA_HOST: mysql
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: root
+      UPLOAD_LIMIT: 100M
